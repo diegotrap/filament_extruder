@@ -11,6 +11,7 @@ The parts necessary for building one puller (first prototype) are:
 * 1 `puller_structure_simplified_fixed` (printed part)
 * 1 `puller_lever_with_spring` (printed part)
 * 1 `puller_wheel` (printed part)
+* 1 continuous rotation servo (I use this one: http://www.pololu.com/product/1248)
 * 1 625-2RS radial ball bearing
 * 1 spring
 * 5 M3x16 screws
