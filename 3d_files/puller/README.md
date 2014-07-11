@@ -4,6 +4,8 @@
 
 The **puller** is a subsystem of the filament extruder line that hauls off the solidified filament coming out of the extruder at a controlled speed.
 
+![](/images/puller.jpg)
+
 ## Parts
 
 The parts necessary for building one puller (first prototype) are:
