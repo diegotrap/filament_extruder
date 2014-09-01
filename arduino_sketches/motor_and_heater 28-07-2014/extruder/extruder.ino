@@ -68,7 +68,7 @@ int read_LCD_buttons() {
   int adc_key_in;
   adc_key_in = analogRead(0); //read value of the keypad analog output
   
-  // my buttons when read are centered at these valies: 0, 144, 329, 504, 741
+  // my buttons when read are centered at these values: 0, 144, 329, 504, 741
   // we add approx 50 to those values and check to see if we are close
   if (adc_key_in > 821)  return btnNONE; // We make this the 1st option for speed reasons since it will be the most likely result
   if (adc_key_in < 50)   return btnRIGHT; 
