@@ -25,6 +25,7 @@ Structure:
 ****************/
 #include <LiquidCrystal.h>
 #include <Encoder.h>
+#include <Extruder.h>
 
 //The next is a fix for the R_AVR_13_PCREL, "relocation truncated to fit" error.
 //Found in here: http://forum.arduino.cc/index.php/topic,127861.0.html
@@ -82,6 +83,7 @@ Structure:
 
 LiquidCrystal lcd(LCD_RS_PIN, LCD_EN_PIN, LCD_D4_PIN, LCD_D5_PIN, LCD_D6_PIN, LCD_D7_PIN);
 Encoder screen_encoder(S_ENC_1_PIN, S_ENC_2_PIN);
+Extruder my_extruder;
 
 
 // LCD custom chars
@@ -132,6 +134,17 @@ byte puller_char[8] = {
 	0b00000
 };
 
+byte thermometer_ON_char[8] = {
+	0b00100,
+	0b01010,
+	0b01010,
+	0b01010,
+	0b01110,
+	0b11111,
+	0b11111,
+	0b01110
+};
+
 //Screen encoder global variables
 //we choose int because when the encoder lecture overflows the increment is calculated with an error, so we want it to happen as rarely as possible
 int old_screen_encoder_position = 0;
@@ -166,6 +179,8 @@ double heater_1_duty_cycle = 0;
 double heater_2_duty_cycle = 0;
 double heater_3_duty_cycle = 0;
 
+
+
 /***************
 	setup()
 ****************/
@@ -175,6 +190,9 @@ void setup() {
 	//Part of the fix for theR_AVR_13_PCREL relocation truncated to fit error
 	//pad[0];
 	
+	my_extruder.setup();
+
+
 	//Pin setup
 	
 	//LCD Pins
@@ -198,6 +216,9 @@ void setup() {
 	lcd.createChar(1, thermometer_char);
 	lcd.createChar(2, fan_char);
 	lcd.createChar(3, puller_char);
+	lcd.createChar(4, thermometer_ON_char);
+
+
 
 }
 
@@ -207,6 +228,12 @@ void setup() {
 ****************/
 
 void loop() {
+
+	//Update the heaters PIDs and PWM pins
+	my_extruder.update_heaters();
+
+	//
+	my_extruder.update_drive();
 
 	static unsigned long last_screen_update; //type is return type of the millis() function
 	static bool is_clicked, is_editing;
@@ -233,15 +260,28 @@ void loop() {
 		//Represent the custom characters in the screen
 		lcd.setCursor(1, 0);
 		lcd.write((uint8_t)0); //motor_char
-	 
+	
 		lcd.setCursor(1, 1);
-		lcd.write((uint8_t)1); //thermometer_char
+		if ( my_extruder.is_heater_ON(1) == 1 ){
+		    lcd.write((uint8_t)4); //thermometer_ON_char
+		} else {
+			lcd.write((uint8_t)1); //thermometer_char
+		}
+		
 		
 		lcd.setCursor(1, 2);
-		lcd.write((uint8_t)1); //thermometer_char
+		if ( my_extruder.is_heater_ON(2) == 1 ){
+		    lcd.write((uint8_t)4); //thermometer_ON_char
+		} else {
+			lcd.write((uint8_t)1); //thermometer_char
+		}
 		
 		lcd.setCursor(1, 3);
-		lcd.write((uint8_t)1); //thermometer_char
+		if ( my_extruder.is_heater_ON(3) == 1 ){
+		    lcd.write((uint8_t)4); //thermometer_ON_char
+		} else {
+			lcd.write((uint8_t)1); //thermometer_char
+		}
 		
 		lcd.setCursor(10, 0);
 		lcd.write((uint8_t)2); //fan_char
@@ -257,36 +297,43 @@ void loop() {
 		lcd.setCursor(5, 0);
 		lcd.print('/');
 		
+		motor_duty_cycle = 100*my_extruder.get_motor_duty_cycle();
 		lcd.setCursor(6, 0);
 		lcd.print( dto3char(motor_duty_cycle) );
 		
 		//Heater 1
+		heater_1_temperature = my_extruder.read_heater_temperature(1);
 		lcd.setCursor(2, 1);
 		lcd.print( dto3char(heater_1_temperature) );
 		
 		lcd.setCursor(5, 1);
 		lcd.print('/');
 		
+		heater_1_setpoint = my_extruder.get_heater_temperature_setpoint(1);
 		lcd.setCursor(6, 1);
 		lcd.print( dto3char(heater_1_setpoint) );
 		
 		//Heater 2
+		heater_2_temperature = my_extruder.read_heater_temperature(2);
 		lcd.setCursor(2, 2);
 		lcd.print( dto3char(heater_2_temperature) );
 		
 		lcd.setCursor(5, 2);
 		lcd.print('/');
 		
+		heater_2_setpoint = my_extruder.get_heater_temperature_setpoint(2);
 		lcd.setCursor(6, 2);
 		lcd.print( dto3char(heater_2_setpoint) );
 		
 		//Heater 3
+		heater_3_temperature = my_extruder.read_heater_temperature(3);
 		lcd.setCursor(2, 3);
 		lcd.print( dto3char(heater_3_temperature) );
 		
 		lcd.setCursor(5, 3);
 		lcd.print('/');
 		
+		heater_3_setpoint = my_extruder.get_heater_temperature_setpoint(3);
 		lcd.setCursor(6, 3);
 		lcd.print( dto3char(heater_3_setpoint) );
 		
@@ -374,20 +421,24 @@ void loop() {
 			    case MOTOR_MENU:
 
 			    	motor_duty_cycle += delta_variable;
+			    	my_extruder.set_motor_duty_cycle(motor_duty_cycle/100);
 			    	break;
 
 			    case HEATER_1_MENU:
 
 			    	heater_1_setpoint += delta_variable;
+			    	my_extruder.set_heater_temperature_setpoint(1, heater_1_setpoint);
 			    	break;
 
 			    case HEATER_2_MENU:
 
 			    	heater_2_setpoint += delta_variable;
+			    	my_extruder.set_heater_temperature_setpoint(2, heater_2_setpoint);
 			    	break;
 
 			    case HEATER_3_MENU:
 			    	heater_3_setpoint += delta_variable;
+			    	my_extruder.set_heater_temperature_setpoint(3, heater_3_setpoint);
 			    	break;
 
 			    case FAN_MENU:
@@ -402,13 +453,14 @@ void loop() {
 
 		}
 
+		//analogWrite(9, 128);
 
 		//debugging aides
-		// lcd.setCursor(11,2);
-		// lcd.write( (int)is_clicked );
+		//lcd.setCursor(11,2);
+		//lcd.write( (int)analogRead(0) );
 
-		// lcd.setCursor(15,2);
-		// lcd.write( (int)cursor_position );
+		//lcd.setCursor(11,3);
+		//lcd.write( (int)heater_1_temperature );
 
 		// lcd.setCursor(11,3);
 		// lcd.write( (int)is_editing );
@@ -425,24 +477,32 @@ char * dto3char(double d){
 	int i = (int)d;
 	
 	//hundreds
-	if (d >= 100.0){
-		conv[0] = (i/100) + '0';
+	if (d > 999 || d < 0){
+		conv[0] = 'E';
+		conv[1] = 'R';
+		conv[2] = (d>=0)?'+':'-';
+		conv[3] = 0;
 	}
 	else {
-		conv[0] = ' ';
+		if (d >= 100.0){
+			conv[0] = (i/100) + '0';
+		}
+		else {
+			conv[0] = ' ';
+		}
+		//tens
+		if (d >= 10.0){
+			conv[1] = (i%100)/10 + '0';
+		}
+		else {
+			conv[1] = ' ';
+		}
+		//units
+		conv[2] = (i%10) + '0';
+		
+		//end of string
+		conv[3] = 0;
 	}
-	//tens
-	if (d >= 10.0){
-		conv[1] = (i%100)/10 + '0';
-	}
-	else {
-		conv[1] = ' ';
-	}
-	//units
-	conv[2] = (i%10) + '0';
-	
-	//end of string
-	conv[3] = 0;
 
 	return conv;
 }
