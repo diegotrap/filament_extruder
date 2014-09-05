@@ -1,5 +1,67 @@
 EESchema Schematic File Version 2
 LIBS:power
+LIBS:74xgxx
+LIBS:74xx
+LIBS:ac-dc
+LIBS:actel
+LIBS:adc-dac
+LIBS:analog_switches
+LIBS:atmel
+LIBS:audio
+LIBS:brooktre
+LIBS:cmos_ieee
+LIBS:cmos4000
+LIBS:conn
+LIBS:contrib
+LIBS:cypress
+LIBS:dc-dc
+LIBS:device
+LIBS:digital-audio
+LIBS:display
+LIBS:dsp
+LIBS:elec-unifil
+LIBS:ftdi
+LIBS:gennum
+LIBS:graphic
+LIBS:hc11
+LIBS:intel
+LIBS:interface
+LIBS:ir
+LIBS:linear
+LIBS:logo
+LIBS:memory
+LIBS:microchip_pic10mcu
+LIBS:microchip_pic12mcu
+LIBS:microchip_pic16mcu
+LIBS:microchip_pic18mcu
+LIBS:microchip
+LIBS:microchip1
+LIBS:microcontrollers
+LIBS:motorola
+LIBS:msp430
+LIBS:noname-cache
+LIBS:nxp_armmcu
+LIBS:opto
+LIBS:philips
+LIBS:powerint
+LIBS:pspice
+LIBS:references
+LIBS:regul
+LIBS:relays
+LIBS:rfcom
+LIBS:sensors
+LIBS:siliconi
+LIBS:special
+LIBS:stm8
+LIBS:stm32
+LIBS:supertex
+LIBS:texas
+LIBS:transf
+LIBS:transistors
+LIBS:ttl_ieee
+LIBS:valves
+LIBS:video
+LIBS:xilinx
 LIBS:heater_module_electronics-cache
 EELAYER 24 0
 EELAYER END
@@ -182,4 +244,21 @@ Wire Wire Line
 	6700 4650 6700 4800
 Wire Wire Line
 	5350 2400 5350 2700
+$Comp
+L DIODE D1
+U 1 1 540A2799
+P 4950 2750
+F 0 "D1" H 4950 2650 40  0000 C CNN
+F 1 "Flyback Diode" H 4950 2850 40  0000 C CNN
+F 2 "" H 4950 2750 60  0000 C CNN
+F 3 "" H 4950 2750 60  0000 C CNN
+	1    4950 2750
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	4950 2550 5350 2550
+Connection ~ 5350 2550
+Wire Wire Line
+	4950 2950 5350 2950
+Connection ~ 5350 2950
 $EndSCHEMATC
