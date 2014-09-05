@@ -3,6 +3,8 @@ Filament Extruder
 
 Filament Extruder is a project dedicated to develop a simple, economic and easy to build filament extruding machine. It starts as an academic project at University Carlos III of Madrid.
 
+A video of the machine working can be found at http://youtu.be/RHb1_fSeXK4.
+
 Currently the project is in prototyping and documenting phase, this is how the extruder looks right now:
 
 *First prototype of the extruder:*
