@@ -53,8 +53,8 @@ Structure:
 #define LCD_D7_PIN 44
 
 //Screen Encoder Pins
-#define S_ENC_1_PIN 2     //Encoder signal 1
-#define S_ENC_2_PIN 3     //Encoder signal 2
+#define S_ENC_A_PIN 20     //Encoder signal 1
+#define S_ENC_B_PIN 21     //Encoder signal 2
 #define S_ENC_BTN_PIN 41  //Encoder button
 
 
@@ -62,7 +62,7 @@ Structure:
 #define SCREEN_REFRESH_PERIOD 200	//in milliseconds. Values below 100 seems to loose encoder steps. Large values cause lag in response.
 #define ENCODER_STEPS_PER_UNIT 2 	//How many steps of the encoder position are necessary to change one menu item or one variable unit
 #define CURSOR_SELECT_CHARACTER 62 	//ACII code for the cursor selection character (by default 62, '>')
-#define CURSOR_EDIT_CHARACTER 35
+#define CURSOR_EDIT_CHARACTER 35 	//ACII code for the cursor edition character (by default 35, '#')
 
 //Menu positions
 #define NUMBER_OF_MENU_POSITIONS 6
@@ -82,9 +82,30 @@ Structure:
 ****************/
 
 LiquidCrystal lcd(LCD_RS_PIN, LCD_EN_PIN, LCD_D4_PIN, LCD_D5_PIN, LCD_D6_PIN, LCD_D7_PIN);
-Encoder screen_encoder(S_ENC_1_PIN, S_ENC_2_PIN);
+Encoder screen_encoder(S_ENC_A_PIN, S_ENC_B_PIN);
 Extruder my_extruder;
 
+Encoder MotorEncoder(4, 5); //Brown cable in pin 5
+                            //White cable in pin 4
+unsigned long last_micros = 0;
+
+float get_motor_speed(){
+  
+  float motor_speed, motor_position;
+  
+  motor_position = MotorEncoder.read();
+  
+  motor_speed = (motor_position/1200.0)/(micros()-last_micros);
+  
+  //convert from rev/us to rev/min
+  motor_speed = motor_speed*600000;
+  
+  //store the last_micros value
+  last_micros = micros();
+  MotorEncoder.write(0); 
+  
+  return motor_speed;
+}
 
 // LCD custom chars
 // Custom characters generated thanks to lcdchargen tool by Omer Kilic
@@ -157,8 +178,9 @@ char delta_variable;
 
 //Extruder state global variables
 //declared as double to make them compatible with the PID library
+//In Arduino, double has same size as float, so no increase in memory usage is compromised.
 
-double motor_speed = 18;
+float motor_speed = 18;
 double heater_1_temperature = 126;
 double heater_2_temperature = 179;
 double heater_3_temperature = 231;
@@ -205,7 +227,7 @@ void setup() {
 	
 	
 	//Screen Encoder Pins
-	//S_ENC_1_PIN and S_ENC_2_PIN must not be initialized for the encoder to work correctly
+	//S_ENC_A_PIN and S_ENC_B_PIN must not be initialized for the encoder to work correctly
 	pinMode(S_ENC_BTN_PIN, INPUT_PULLUP); //must be connected to an internal pullup resistor
 	
 	// set up the LCD's number of columns and rows: 
@@ -234,6 +256,8 @@ void loop() {
 
 	//
 	my_extruder.update_drive();
+
+	my_extruder.update_puller();
 
 	static unsigned long last_screen_update; //type is return type of the millis() function
 	static bool is_clicked, is_editing;
@@ -291,8 +315,9 @@ void loop() {
 
 		//Motor
 		
+		motor_speed = my_extruder.read_motor_speed();
 		lcd.setCursor(2, 0);
-		lcd.print( dto3char(motor_speed) );
+		lcd.print( dto3char( (double)motor_speed) );
 		
 		lcd.setCursor(5, 0);
 		lcd.print('/');
@@ -342,8 +367,9 @@ void loop() {
 		lcd.print(fan_on);
 		
 		//Puller
+		puller_speed = my_extruder.get_puller_pulse_width();
 		lcd.setCursor(11, 1);
-		lcd.print( dto3char(puller_speed) );
+		lcd.print( ito4char(puller_speed) );
 
 
 		//read the screen encoder position
@@ -437,6 +463,7 @@ void loop() {
 			    	break;
 
 			    case HEATER_3_MENU:
+
 			    	heater_3_setpoint += delta_variable;
 			    	my_extruder.set_heater_temperature_setpoint(3, heater_3_setpoint);
 			    	break;
@@ -447,6 +474,7 @@ void loop() {
 
 			    case PULLER_MENU:
 			    	puller_speed += delta_variable;
+			    	my_extruder.set_puller_pulse_width(puller_speed);
 			    	break;
 			}
 
@@ -462,21 +490,21 @@ void loop() {
 		//lcd.setCursor(11,3);
 		//lcd.write( (int)heater_1_temperature );
 
-		// lcd.setCursor(11,3);
-		// lcd.write( (int)is_editing );
+		//lcd.setCursor(11,3);
+		//lcd.write( dto5char(motor_speed) );
 
 	}
 
 }
 
 
-char conv[4];
+char conv[5];
 
 char * dto3char(double d){
 	//takes the double d and returns the string in format "123" (no decimals, three digits)
 	int i = (int)d;
 	
-	//hundreds
+	//error
 	if (d > 999 || d < 0){
 		conv[0] = 'E';
 		conv[1] = 'R';
@@ -484,6 +512,7 @@ char * dto3char(double d){
 		conv[3] = 0;
 	}
 	else {
+		//hundreds
 		if (d >= 100.0){
 			conv[0] = (i/100) + '0';
 		}
@@ -502,6 +531,46 @@ char * dto3char(double d){
 		
 		//end of string
 		conv[3] = 0;
+	}
+
+	return conv;
+}
+
+char * ito4char(int i){
+	
+	//errors
+	if (i > 9999 || i < 0){
+		conv[0] = 'E';
+		conv[1] = 'R';
+		conv[2] = (i>=0)?'+':'-';
+		conv[3] = 0;
+	}
+	else {
+		if (i >= 1000){
+			conv[0] = (i/1000) + '0';
+		}
+		else {
+			conv[0] = ' ';
+		}
+		//hundreds
+		if (i >= 100){
+			conv[1] = (i%1000)/100 + '0';
+		}
+		else {
+			conv[1] = ' ';
+		}
+		//tens
+		if (i >= 10){
+			conv[2] = (i%100)/10 + '0';
+		}
+		else {
+			conv[2] = ' ';
+		}
+		//units
+		conv[3] = (i%10) + '0';
+		
+		//end of string
+		conv[4] = 0;
 	}
 
 	return conv;
