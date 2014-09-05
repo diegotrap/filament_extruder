@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="D">
+  <design>
+    <source>/Users/diegotrap/Dropbox/filament_extruder/schematics/heater_module_electronics.sch</source>
+    <date>2014 September 05, Friday 22:16:11</date>
+    <tool>eeschema (2014-03-01 BZR 4730)-product</tool>
+  </design>
+  <components>
+    <comp ref="P2">
+      <value>Heating element connector</value>
+      <libsource lib="conn" part="CONN_01X02"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>540A042E</tstamp>
+    </comp>
+    <comp ref="R2">
+      <value>10K</value>
+      <libsource lib="device" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>540A04D1</tstamp>
+    </comp>
+    <comp ref="TH1">
+      <value>NTC THERMISTOR</value>
+      <libsource lib="device" part="THERMISTOR"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>540A0523</tstamp>
+    </comp>
+    <comp ref="Q1">
+      <value>IRL540</value>
+      <libsource lib="device" part="MOSFET_N"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>540A05F4</tstamp>
+    </comp>
+    <comp ref="R1">
+      <value>100</value>
+      <libsource lib="device" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>540A0656</tstamp>
+    </comp>
+    <comp ref="P1">
+      <value>Heater PWM Pin</value>
+      <libsource lib="conn" part="CONN_01X01"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>540A06F7</tstamp>
+    </comp>
+    <comp ref="R3">
+      <value>460</value>
+      <libsource lib="device" part="R"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>540A07A4</tstamp>
+    </comp>
+    <comp ref="P3">
+      <value>Heater Thermistor Pin</value>
+      <libsource lib="conn" part="CONN_01X01"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>540A0805</tstamp>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="conn" part="CONN_01X01">
+      <footprints>
+        <fp>Pin_Header_Straight_1X01</fp>
+        <fp>Pin_Header_Angled_1X01</fp>
+        <fp>Socket_Strip_Straight_1X01</fp>
+        <fp>Socket_Strip_Angled_1X01</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">P</field>
+        <field name="Value">CONN_01X01</field>
+      </fields>
+      <pins>
+        <pin num="1" name="P1" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="conn" part="CONN_01X02">
+      <footprints>
+        <fp>Pin_Header_Straight_1X02</fp>
+        <fp>Pin_Header_Angled_1X02</fp>
+        <fp>Socket_Strip_Straight_1X02</fp>
+        <fp>Socket_Strip_Angled_1X02</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">P</field>
+        <field name="Value">CONN_01X02</field>
+      </fields>
+      <pins>
+        <pin num="1" name="P1" type="passive"/>
+        <pin num="2" name="P2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="device" part="MOS_N">
+      <aliases>
+        <alias>MOSFET_N</alias>
+      </aliases>
+      <docs>transistors/mos/*.*</docs>
+      <fields>
+        <field name="Reference">Q</field>
+        <field name="Value">MOS_N</field>
+      </fields>
+      <pins>
+        <pin num="D" name="D" type="passive"/>
+        <pin num="G" name="G" type="input"/>
+        <pin num="S" name="S" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="device" part="R">
+      <description>Resistance</description>
+      <footprints>
+        <fp>R?</fp>
+        <fp>SM0603</fp>
+        <fp>SM0805</fp>
+        <fp>R?-*</fp>
+        <fp>SM1206</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">R</field>
+      </fields>
+      <pins>
+        <pin num="1" name="~" type="passive"/>
+        <pin num="2" name="~" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="device" part="THERMISTOR">
+      <description>Resistance</description>
+      <footprints>
+        <fp>R?</fp>
+        <fp>SM0603</fp>
+        <fp>SM0805</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">TH</field>
+        <field name="Value">THERMISTOR</field>
+      </fields>
+      <pins>
+        <pin num="1" name="~" type="passive"/>
+        <pin num="2" name="~" type="passive"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries>
+    <library logical="conn">
+      <uri>conn.lib</uri>
+    </library>
+    <library logical="device">
+      <uri>device.lib</uri>
+    </library>
+  </libraries>
+  <nets>
+    <net code="1" name="Net-(P1-Pad1)">
+      <node ref="P1" pin="1"/>
+      <node ref="R1" pin="2"/>
+    </net>
+    <net code="2" name="GND">
+      <node ref="Q1" pin="S"/>
+      <node ref="TH1" pin="2"/>
+      <node ref="R2" pin="2"/>
+    </net>
+    <net code="3" name="+5V">
+      <node ref="R3" pin="1"/>
+    </net>
+    <net code="4" name="Net-(P3-Pad1)">
+      <node ref="TH1" pin="1"/>
+      <node ref="P3" pin="1"/>
+      <node ref="R3" pin="2"/>
+    </net>
+    <net code="5" name="+24V">
+      <node ref="P2" pin="1"/>
+    </net>
+    <net code="6" name="Net-(P2-Pad2)">
+      <node ref="Q1" pin="D"/>
+      <node ref="P2" pin="2"/>
+    </net>
+    <net code="7" name="Net-(Q1-PadG)">
+      <node ref="R1" pin="1"/>
+      <node ref="Q1" pin="G"/>
+      <node ref="R2" pin="1"/>
+    </net>
+  </nets>
+</export>
