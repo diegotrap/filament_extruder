@@ -259,6 +259,8 @@ void loop() {
 
 	my_extruder.update_puller();
 
+	my_extruder.update_fan();
+
 	static unsigned long last_screen_update; //type is return type of the millis() function
 	static bool is_clicked, is_editing;
 
@@ -363,6 +365,7 @@ void loop() {
 		lcd.print( dto3char(heater_3_setpoint) );
 		
 		//Fan
+		fan_on = my_extruder.is_fan_ON();
 		lcd.setCursor(11, 0);
 		lcd.print(fan_on);
 		
@@ -469,7 +472,19 @@ void loop() {
 			    	break;
 
 			    case FAN_MENU:
-			    	fan_on += delta_variable;
+			    	
+			    	//if the encoder has been turned and odd number of times, change the state of the fan
+			    	//(and even number of state changes would lead to the same initial state)
+			    	if ( (delta_variable != 0) && (delta_variable%2 == 1) ){
+			    		if (my_extruder.is_fan_ON() == 1){
+			    			//if the fan is ON, turn it OFF
+			    			my_extruder.set_fan_OFF();
+			    		}
+			    		else{
+			    			//if the fan is OFF, turn it ON
+			    			my_extruder.set_fan_ON();
+			    		}
+			    	}
 			    	break;
 
 			    case PULLER_MENU:
