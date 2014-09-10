@@ -42,6 +42,8 @@ class Extruder
 		Heater * _heater[NUMBER_OF_HEATERS+1]; //Index correspond to heater number. _heater[0] is empty
 		Drive * _drive;
 		Puller * _puller;
+		bool _fan_state;
+		char _fan_pin;
 		bool _cold_extrusion;
 	public:
 		Extruder();
@@ -50,6 +52,7 @@ class Extruder
 		void update_heaters();
 		void update_drive();
 		void update_puller();
+		void update_fan();
 		double read_heater_temperature(char heater_number);
 		bool is_heater_ON(char heater_number);
 		double get_heater_temperature_setpoint(char heater_number);
@@ -59,6 +62,9 @@ class Extruder
 		void set_motor_duty_cycle(double motor_duty_cycle);
 		int get_puller_pulse_width();
 		void set_puller_pulse_width(int pulse_width);
+		bool is_fan_ON();
+		void set_fan_ON();
+		void set_fan_OFF();
 };
 
 #endif

@@ -7,10 +7,13 @@ Extruder::Extruder(){
 		_heater[i] = new Heater(HEATER_PWM_PIN[i], HEATER_THERMISTOR_PIN[i], thermistor_lut, HEATER_SETPOINT[i], HEATER_MAX_TEMPERATURE, HEATER_MIN_TEMPERATURE, HEATER_K_P[i], HEATER_K_I[i], HEATER_K_D[i] );
 	}
 
-	_drive = new Drive( MOTOR_PWM_PIN, MOTOR_LOW_PIN, MOTOR_SF_PIN, MOTOR_ENCODER_1_PIN, MOTOR_ENCODER_2_PIN, MOTOR_ENCODER_STEPS_PER_REVOLUTION);
-	//Drive(char motor_pwm_pin, char motor_low_pin, char motor_sf_pin, char encoder_1_pin, char encoder_2_pin,  int motor_encoder_steps_per_revolution);
+	_drive = new Drive( MOTOR_PWM_PIN, MOTOR_LOW_PIN, MOTOR_ENCODER_1_PIN, MOTOR_ENCODER_2_PIN, MOTOR_ENCODER_STEPS_PER_REVOLUTION);
+	//Drive(char motor_pwm_pin, char motor_low_pin, char encoder_1_pin, char encoder_2_pin,  int motor_encoder_steps_per_revolution);
 
 	_puller = new Puller(PULLER_PIN);
+
+	_fan_pin = FAN_PIN;
+	_fan_state = 0;
 
 	_cold_extrusion = 0;
 }
@@ -36,6 +39,8 @@ void Extruder::setup(){
 	_drive->setup();
 
 	_puller->setup();
+
+	pinMode(_fan_pin, OUTPUT);
 }
 
 void Extruder::update_heaters(){
@@ -67,6 +72,15 @@ void Extruder::update_drive(){
 
 void Extruder::update_puller(){
 	_puller->update();
+}
+
+void Extruder::update_fan(){
+		if (_fan_state == 0){
+			digitalWrite(_fan_pin, LOW);
+		}
+		else{
+			digitalWrite(_fan_pin, HIGH);
+		}
 }
 
 double Extruder::read_heater_temperature(char heater_number){
@@ -106,4 +120,16 @@ int Extruder::get_puller_pulse_width(){
 
 void Extruder::set_puller_pulse_width(int pulse_width){
 	_puller->set_pulse_width(pulse_width);
+}
+
+bool Extruder::is_fan_ON(){
+	return _fan_state;
+}
+
+void Extruder::set_fan_ON(){
+	_fan_state = 1;
+}
+
+void Extruder::set_fan_OFF(){
+	_fan_state = 0;
 }

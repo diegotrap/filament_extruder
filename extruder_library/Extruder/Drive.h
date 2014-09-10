@@ -20,7 +20,6 @@ class Drive {
 
 	char _motor_pwm_pin;
 	char _motor_low_pin;
-	char _motor_sf_pin;
 	char _encoder_1_pin;
 	char _encoder_2_pin;
 
@@ -36,7 +35,7 @@ class Drive {
 	//Empty constructor
 	Drive();
 	//Parametrized constructor
-	Drive(char motor_pwm_pin, char motor_low_pin, char motor_sf_pin, char encoder_1_pin, char encoder_2_pin, int motor_encoder_steps_per_revolution);
+	Drive(char motor_pwm_pin, char motor_low_pin, char encoder_1_pin, char encoder_2_pin, int motor_encoder_steps_per_revolution);
 
 
 	//Destructor:

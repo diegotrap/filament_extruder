@@ -16,7 +16,6 @@
 
 #define MOTOR_PWM_PIN 4 	//Pin that outputs the PWM control signal (white)
 #define MOTOR_LOW_PIN 5 	//Pin that allways is LOW (grey)
-#define MOTOR_SF_PIN 6 		//Motor driver status flag (green)
 
 #define MOTOR_ENCODER_1_PIN 3 	//white cable
 #define MOTOR_ENCODER_2_PIN 2 	//brown cable
@@ -47,7 +46,7 @@ const char HEATER_THERMISTOR_PIN[6] = {0, HEATER_1_THERMISTOR_PIN, HEATER_2_THER
 
 #define PULLER_PIN 12
 
-#define FAN_PIN 12345
+#define FAN_PIN 8
 
 
 /***************************

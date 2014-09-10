@@ -9,11 +9,10 @@
 		//not implemented, use parametrized constructor
 	}
 	//Parametrized constructor
-	Drive::Drive(char motor_pwm_pin, char motor_low_pin, char motor_sf_pin, char encoder_1_pin, char encoder_2_pin,  int encoder_steps_per_revolution){
+	Drive::Drive(char motor_pwm_pin, char motor_low_pin, char encoder_1_pin, char encoder_2_pin,  int encoder_steps_per_revolution){
 		//Pins
 		_motor_pwm_pin = motor_pwm_pin;
 		_motor_low_pin = motor_low_pin;
-		_motor_sf_pin = motor_sf_pin;
 		_encoder_1_pin = encoder_1_pin;
 		_encoder_2_pin = encoder_2_pin;
 
@@ -40,7 +39,6 @@
 	void Drive::setup(){
 		pinMode(_motor_pwm_pin, OUTPUT); 	//IN2 pin, controls the red terminal of the motor (V+, PWM Speed control
 		pinMode(_motor_low_pin, OUTPUT); 	//IN1 pin, controls the black terminal of the motor (GND)
-		pinMode(_motor_sf_pin, INPUT); 		//SF flag
 	}
 
 	//Update drive output pins
