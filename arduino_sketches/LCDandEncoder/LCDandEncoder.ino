@@ -59,7 +59,7 @@ Structure:
 
 
 //Screen Constants
-#define SCREEN_REFRESH_PERIOD 200	//in milliseconds. Values below 100 seems to loose encoder steps. Large values cause lag in response.
+#define SCREEN_REFRESH_PERIOD 500	//in milliseconds. Values below 100 seems to loose encoder steps. Large values cause lag in response.
 #define ENCODER_STEPS_PER_UNIT 2 	//How many steps of the encoder position are necessary to change one menu item or one variable unit
 #define CURSOR_SELECT_CHARACTER 62 	//ACII code for the cursor selection character (by default 62, '>')
 #define CURSOR_EDIT_CHARACTER 35 	//ACII code for the cursor edition character (by default 35, '#')
