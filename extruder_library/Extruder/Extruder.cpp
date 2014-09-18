@@ -2,13 +2,14 @@
 
 Extruder::Extruder(){
 	
+	//The extruder constructor dynamically instantiates all the components of the extruder, using the values stored in the configuration file.
+
 	int i = 0;
 	for (i = 1; i <= NUMBER_OF_HEATERS; i++ ){ //start from 1 because _heater[0] should be empty
-		_heater[i] = new Heater(HEATER_PWM_PIN[i], HEATER_THERMISTOR_PIN[i], thermistor_lut, HEATER_SETPOINT[i], HEATER_MAX_TEMPERATURE, HEATER_MIN_TEMPERATURE, HEATER_K_P[i], HEATER_K_I[i], HEATER_K_D[i] );
+		_heater[i] = new Heater(HEATER_PWM_PIN[i], HEATER_THERMISTOR_PIN[i], thermistor_lut, HEATER_SETPOINT[i], HEATER_MAX_PWM, HEATER_MAX_TEMPERATURE, HEATER_MIN_TEMPERATURE, HEATER_K_P[i], HEATER_K_I[i], HEATER_K_D[i] );
 	}
 
 	_drive = new Drive( MOTOR_PWM_PIN, MOTOR_LOW_PIN, MOTOR_ENCODER_1_PIN, MOTOR_ENCODER_2_PIN, MOTOR_ENCODER_STEPS_PER_REVOLUTION);
-	//Drive(char motor_pwm_pin, char motor_low_pin, char encoder_1_pin, char encoder_2_pin,  int motor_encoder_steps_per_revolution);
 
 	_puller = new Puller(PULLER_PIN);
 

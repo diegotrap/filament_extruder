@@ -7,7 +7,7 @@
 		//not implemented, use the parametrized constructor
 	}
 	//Parametrized constructor
-	Heater::Heater(char heater_pwm_pin, char thermistor_pin, const double * thermistor_lut, double temperature_setpoint, double max_temperature_setpoint, double min_temperature_setpoint, double k_p, double k_i, double k_d){
+	Heater::Heater(char heater_pwm_pin, char thermistor_pin, const double * thermistor_lut, double temperature_setpoint, double max_pwm, double max_temperature_setpoint, double min_temperature_setpoint, double k_p, double k_i, double k_d){
 		_heater_pwm_pin = heater_pwm_pin;
 
 		//Instantiate the Thermistor
@@ -15,6 +15,9 @@
 
 		//read the temperature for the first time and update the internal variable
 		_temperature = _thermistor->read();
+
+		//Set the maximum duty cycle value, used to limit the heating power
+		_max_pwm = max_pwm;
 
 		//Set the initial setpoint, min and max values
 		_temperature_setpoint = temperature_setpoint;
@@ -44,8 +47,8 @@
 		//set the PWM pin to output
 		pinMode(_heater_pwm_pin, OUTPUT);
 
-		//Configure PID
-		_heater_PID->SetOutputLimits(0.0, 1.0);
+		//Configure PID, set the PWM maximum duty cycle
+		_heater_PID->SetOutputLimits(0.0, _max_pwm);
 		_heater_PID->SetMode(AUTOMATIC);
 	}
 

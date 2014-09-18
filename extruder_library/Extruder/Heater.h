@@ -26,6 +26,7 @@ class Heater {
 	double _heater_duty_cycle;
 	double _temperature;
 	double _temperature_setpoint;
+	double _max_pwm;
 	double _max_temperature_setpoint;
 	double _min_temperature_setpoint;
 	PID * _heater_PID;
@@ -37,7 +38,7 @@ class Heater {
 	//Empty constructor
 	Heater();
 	//Parametrized constructor
-	Heater(char heater_pwm_pin, char thermistor_pin, const double * thermistor_lut, double temperature_setpoint, double max_temperature_setpoint, double min_temperature_setpoint, double k_p, double k_i, double k_d);
+	Heater(char heater_pwm_pin, char thermistor_pin, const double * thermistor_lut, double temperature_setpoint, double max_pwm, double max_temperature_setpoint, double min_temperature_setpoint, double k_p, double k_i, double k_d);
 
 	//Destructor:
 
