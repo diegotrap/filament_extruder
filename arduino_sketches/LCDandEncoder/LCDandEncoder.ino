@@ -12,11 +12,11 @@ Coding convention:
 Structure:
 
 	* Libraries
-	* Configuration
 	* Constants
 	* Global variables
 	* setup()
 	* loop()
+	* Auxiliary functions
 
 */
 
@@ -27,19 +27,8 @@ Structure:
 #include <Encoder.h>
 #include <Extruder.h>
 
-//The next is a fix for the R_AVR_13_PCREL, "relocation truncated to fit" error.
-//Found in here: http://forum.arduino.cc/index.php/topic,127861.0.html
-//Deeper explanation here: http://stackoverflow.com/questions/8188849/avr-linker-error-relocation-truncated-to-fit
-//#include <avr/pgmspace.h>
-//const char pad[100] PROGMEM = { 0 };
-
 /***************
 	Configuration
-****************/
-
-
-/***************
-	Constants
 ****************/
 
 //Pin Constants
@@ -73,7 +62,6 @@ Structure:
 #define HEATER_3_MENU 3
 #define FAN_MENU 4
 #define PULLER_MENU 5
-//falta el winder
 
 
 
@@ -81,31 +69,10 @@ Structure:
 	Global variables
 ****************/
 
+// Instantiate the classes
 LiquidCrystal lcd(LCD_RS_PIN, LCD_EN_PIN, LCD_D4_PIN, LCD_D5_PIN, LCD_D6_PIN, LCD_D7_PIN);
 Encoder screen_encoder(S_ENC_A_PIN, S_ENC_B_PIN);
 Extruder my_extruder;
-
-Encoder MotorEncoder(4, 5); //Brown cable in pin 5
-                            //White cable in pin 4
-unsigned long last_micros = 0;
-
-float get_motor_speed(){
-  
-  float motor_speed, motor_position;
-  
-  motor_position = MotorEncoder.read();
-  
-  motor_speed = (motor_position/1200.0)/(micros()-last_micros);
-  
-  //convert from rev/us to rev/min
-  motor_speed = motor_speed*600000;
-  
-  //store the last_micros value
-  last_micros = micros();
-  MotorEncoder.write(0); 
-  
-  return motor_speed;
-}
 
 // LCD custom chars
 // Custom characters generated thanks to lcdchargen tool by Omer Kilic
@@ -167,7 +134,7 @@ byte thermometer_ON_char[8] = {
 };
 
 //Screen encoder global variables
-//we choose int because when the encoder lecture overflows the increment is calculated with an error, so we want it to happen as rarely as possible
+//we choose int because when the encoder lecture overflows the position increment is calculated with an error, so we want it to happen as rarely as possible
 int old_screen_encoder_position = 0;
 int new_screen_encoder_position;
 int delta_encoder_position;
@@ -179,7 +146,6 @@ char delta_variable;
 //Extruder state global variables
 //declared as double to make them compatible with the PID library
 //In Arduino, double has same size as float, so no increase in memory usage is compromised.
-
 float motor_speed = 18;
 double heater_1_temperature = 126;
 double heater_2_temperature = 179;
@@ -208,14 +174,12 @@ double heater_3_duty_cycle = 0;
 ****************/
 
 void setup() {
-	
-	//Part of the fix for theR_AVR_13_PCREL relocation truncated to fit error
-	//pad[0];
-	
+
+	//Call the extruder setup method to manage all the initial configurartions: pin modes, operation modes, etc.
 	my_extruder.setup();
 
 
-	//Pin setup
+	//LCD pin setup
 	
 	//LCD Pins
 	pinMode(LCD_RS_PIN, OUTPUT);
@@ -240,8 +204,6 @@ void setup() {
 	lcd.createChar(3, puller_char);
 	lcd.createChar(4, thermometer_ON_char);
 
-
-
 }
 
 
@@ -251,15 +213,22 @@ void setup() {
 
 void loop() {
 
-	//Update the heaters PIDs and PWM pins
+	//First, update all the extruder subsystems
+
+	//Update the heaters PID modules and PWM pins
 	my_extruder.update_heaters();
 
-	//
+	//Update the driver: checks whether there's cold extrusion and updates the PWM pins.
 	my_extruder.update_drive();
 
+	//Updatesthe puller output pins
 	my_extruder.update_puller();
 
+	//Update the fan output pins
 	my_extruder.update_fan();
+
+
+	//Second, update the LCD screen every SCREEN_REFRESH_PERIOD seconds
 
 	static unsigned long last_screen_update; //type is return type of the millis() function
 	static bool is_clicked, is_editing;
@@ -315,8 +284,9 @@ void loop() {
 		lcd.setCursor(10, 1);
 		lcd.write((uint8_t)3); //puller_char
 
+		//Write the variable values:
+
 		//Motor
-		
 		motor_speed = my_extruder.read_motor_speed();
 		lcd.setCursor(2, 0);
 		lcd.print( dto3char( (double)motor_speed) );
@@ -492,26 +462,15 @@ void loop() {
 			    	my_extruder.set_puller_pulse_width(puller_speed);
 			    	break;
 			}
-
-
 		}
-
-		//analogWrite(9, 128);
-
-		//debugging aides
-		//lcd.setCursor(11,2);
-		//lcd.write( (int)analogRead(0) );
-
-		//lcd.setCursor(11,3);
-		//lcd.write( (int)heater_1_temperature );
-
-		//lcd.setCursor(11,3);
-		//lcd.write( dto5char(motor_speed) );
-
 	}
-
 }
 
+/***************
+	Auxiliary functions
+****************/
+
+//auxiliary functions used to convert variables to character arrays that can be represented in the LCD screen
 
 char conv[5];
 
