@@ -16,6 +16,7 @@ Structure:
 	* Global variables
 	* setup()
 	* loop()
+	* LCD and Encoder functions
 	* Auxiliary functions
 
 */
@@ -167,7 +168,8 @@ double heater_1_duty_cycle = 0;
 double heater_2_duty_cycle = 0;
 double heater_3_duty_cycle = 0;
 
-
+//Menu state variables
+bool is_clicked, is_editing;
 
 /***************
 	setup()
@@ -231,238 +233,277 @@ void loop() {
 	//Second, update the LCD screen every SCREEN_REFRESH_PERIOD seconds
 
 	static unsigned long last_screen_update; //type is return type of the millis() function
-	static bool is_clicked, is_editing;
 
 
 	if (millis() - last_screen_update >= SCREEN_REFRESH_PERIOD) {
 
 		last_screen_update = millis();
 
-		//update the button state
-		if ( digitalRead(S_ENC_BTN_PIN) == HIGH ){
-			is_clicked = 0;  //button is pulled up and gives a HIGH when its not pushed
-		} else {
-			is_clicked = 1;
-		}
+		read_encoder_button();
 
-		//update the menu mode (selecting or editing)
-		if ( is_editing == 0 && is_clicked == 1){ //if we are in selecting mode and the button is pushed, enter editing mode
-		    is_editing = 1;
-		} else if (is_editing == 1 && is_clicked == 1){ //if we are in editing mode and the button is pushed, leave editing mode
-			is_editing = 0;
-		}
+		refresh_screen();
 
-		//Represent the custom characters in the screen
-		lcd.setCursor(1, 0);
-		lcd.write((uint8_t)0); //motor_char
-	
-		lcd.setCursor(1, 1);
-		if ( my_extruder.is_heater_ON(1) == 1 ){
-		    lcd.write((uint8_t)4); //thermometer_ON_char
-		} else {
-			lcd.write((uint8_t)1); //thermometer_char
-		}
-		
-		
-		lcd.setCursor(1, 2);
-		if ( my_extruder.is_heater_ON(2) == 1 ){
-		    lcd.write((uint8_t)4); //thermometer_ON_char
-		} else {
-			lcd.write((uint8_t)1); //thermometer_char
-		}
-		
-		lcd.setCursor(1, 3);
-		if ( my_extruder.is_heater_ON(3) == 1 ){
-		    lcd.write((uint8_t)4); //thermometer_ON_char
-		} else {
-			lcd.write((uint8_t)1); //thermometer_char
-		}
-		
-		lcd.setCursor(10, 0);
-		lcd.write((uint8_t)2); //fan_char
-		
-		lcd.setCursor(10, 1);
-		lcd.write((uint8_t)3); //puller_char
+		read_encoder_rotation();
 
-		//Write the variable values:
-
-		//Motor
-		motor_speed = my_extruder.read_motor_speed();
-		lcd.setCursor(2, 0);
-		lcd.print( dto3char( (double)motor_speed) );
-		
-		lcd.setCursor(5, 0);
-		lcd.print('/');
-		
-		motor_duty_cycle = 100*my_extruder.get_motor_duty_cycle();
-		lcd.setCursor(6, 0);
-		lcd.print( dto3char(motor_duty_cycle) );
-		
-		//Heater 1
-		heater_1_temperature = my_extruder.read_heater_temperature(1);
-		lcd.setCursor(2, 1);
-		lcd.print( dto3char(heater_1_temperature) );
-		
-		lcd.setCursor(5, 1);
-		lcd.print('/');
-		
-		heater_1_setpoint = my_extruder.get_heater_temperature_setpoint(1);
-		lcd.setCursor(6, 1);
-		lcd.print( dto3char(heater_1_setpoint) );
-		
-		//Heater 2
-		heater_2_temperature = my_extruder.read_heater_temperature(2);
-		lcd.setCursor(2, 2);
-		lcd.print( dto3char(heater_2_temperature) );
-		
-		lcd.setCursor(5, 2);
-		lcd.print('/');
-		
-		heater_2_setpoint = my_extruder.get_heater_temperature_setpoint(2);
-		lcd.setCursor(6, 2);
-		lcd.print( dto3char(heater_2_setpoint) );
-		
-		//Heater 3
-		heater_3_temperature = my_extruder.read_heater_temperature(3);
-		lcd.setCursor(2, 3);
-		lcd.print( dto3char(heater_3_temperature) );
-		
-		lcd.setCursor(5, 3);
-		lcd.print('/');
-		
-		heater_3_setpoint = my_extruder.get_heater_temperature_setpoint(3);
-		lcd.setCursor(6, 3);
-		lcd.print( dto3char(heater_3_setpoint) );
-		
-		//Fan
-		fan_on = my_extruder.is_fan_ON();
-		lcd.setCursor(11, 0);
-		lcd.print(fan_on);
-		
-		//Puller
-		puller_speed = my_extruder.get_puller_pulse_width();
-		lcd.setCursor(11, 1);
-		lcd.print( ito4char(puller_speed) );
-
-
-		//read the screen encoder position
-		new_screen_encoder_position = screen_encoder.read();
-		
-		//calculate the increment (delta) in encoder position since last execution
-		delta_encoder_position = new_screen_encoder_position - old_screen_encoder_position;
-		
-		//once we have finished calculating, store the last value of the screen encoder
-		old_screen_encoder_position = new_screen_encoder_position;
-		
-		//if the screen encoder position is "about" to overflow the int range, return it to zero
-		if ( (screen_encoder.read() >= 32000) || (screen_encoder.read() < -32000) ) {
-			screen_encoder.write(0);
-		}
 
 		// if we are in selecting mode, update the cursor
 		if (is_editing == 0) {
-		
-			//Calculate the increment (delta) in the position of the cursor
-			delta_cursor = delta_encoder_position / ENCODER_STEPS_PER_UNIT;
 
-			//Clear the cursor character in the old position before the cursor is updated
-			if (cursor_position <= 3){
-				lcd.setCursor(0, cursor_position);
-			}
-			//if the menu item is in the right column
-			else {
-				lcd.setCursor(9, cursor_position - 4);
-			}
-			lcd.write(' ');
+			select_mode();
 
-			//Calculate the new cursor position
-			//If the cursor position has gone out of the range determined by NUMBER_OF_MENU_POSITIONS, return it back
-			cursor_position = cursor_position + delta_cursor;
-			
-			while(cursor_position >= NUMBER_OF_MENU_POSITIONS ){
-				cursor_position = cursor_position - NUMBER_OF_MENU_POSITIONS;
-			}
-			
-			while(cursor_position < 0){
-				cursor_position = cursor_position + NUMBER_OF_MENU_POSITIONS;
-			}
-			
-			// Print the selection cursor
-			//if the menu item is in the left column
-			if (cursor_position <= 3){
-				lcd.setCursor(0, cursor_position);
-			}
-			//if the menu item is in the right column
-			else {
-				lcd.setCursor(9, cursor_position - 4);
-			}
-			lcd.write(CURSOR_SELECT_CHARACTER);
 		}
+		else {
 
-		
-		if (is_editing == 1){
-			
-			//if is editing, firstly substitute the selection character by the edition character
-			if (cursor_position <= 3){
-				lcd.setCursor(0, cursor_position);
-			}
-			//if the menu item is in the right column
-			else {
-				lcd.setCursor(9, cursor_position - 4);
-			}
-			lcd.write(CURSOR_EDIT_CHARACTER);
+			edit_mode();
 
-			// update the increment (delta) of the variable to edit
-			delta_variable = delta_encoder_position / ENCODER_STEPS_PER_UNIT;
-
-			switch (cursor_position) { //depending on the menu selected, perform the editing action
-			    
-			    case MOTOR_MENU:
-
-			    	motor_duty_cycle += delta_variable;
-			    	my_extruder.set_motor_duty_cycle(motor_duty_cycle/100);
-			    	break;
-
-			    case HEATER_1_MENU:
-
-			    	heater_1_setpoint += delta_variable;
-			    	my_extruder.set_heater_temperature_setpoint(1, heater_1_setpoint);
-			    	break;
-
-			    case HEATER_2_MENU:
-
-			    	heater_2_setpoint += delta_variable;
-			    	my_extruder.set_heater_temperature_setpoint(2, heater_2_setpoint);
-			    	break;
-
-			    case HEATER_3_MENU:
-
-			    	heater_3_setpoint += delta_variable;
-			    	my_extruder.set_heater_temperature_setpoint(3, heater_3_setpoint);
-			    	break;
-
-			    case FAN_MENU:
-			    	
-			    	//if the encoder has been turned and odd number of times, change the state of the fan
-			    	//(and even number of state changes would lead to the same initial state)
-			    	if ( (delta_variable != 0) && (delta_variable%2 == 1) ){
-			    		if (my_extruder.is_fan_ON() == 1){
-			    			//if the fan is ON, turn it OFF
-			    			my_extruder.set_fan_OFF();
-			    		}
-			    		else{
-			    			//if the fan is OFF, turn it ON
-			    			my_extruder.set_fan_ON();
-			    		}
-			    	}
-			    	break;
-
-			    case PULLER_MENU:
-			    	puller_speed += delta_variable;
-			    	my_extruder.set_puller_pulse_width(puller_speed);
-			    	break;
-			}
 		}
+	}
+}
+
+/***************
+	LCD and Encoder functions
+****************/
+
+void read_encoder_button(){
+
+	//read encoder button and change menu state
+
+	//update the button state
+	if ( digitalRead(S_ENC_BTN_PIN) == HIGH ){
+		is_clicked = 0;  //button is pulled up and gives a HIGH when its not pushed
+	} else {
+		is_clicked = 1;
+	}
+
+	//update the menu mode (selecting or editing)
+	if ( is_editing == 0 && is_clicked == 1){ //if we are in selecting mode and the button is pushed, enter editing mode
+	    is_editing = 1;
+	} else if (is_editing == 1 && is_clicked == 1){ //if we are in editing mode and the button is pushed, leave editing mode
+		is_editing = 0;
+	}
+}
+
+
+void refresh_screen(){
+
+	//refresh screen and draw all the characters
+
+	//Represent the custom characters in the screen
+	lcd.setCursor(1, 0);
+	lcd.write((uint8_t)0); //motor_char
+
+	lcd.setCursor(1, 1);
+	if ( my_extruder.is_heater_ON(1) == 1 ){
+	    lcd.write((uint8_t)4); //thermometer_ON_char
+	} else {
+		lcd.write((uint8_t)1); //thermometer_char
+	}
+	
+	
+	lcd.setCursor(1, 2);
+	if ( my_extruder.is_heater_ON(2) == 1 ){
+	    lcd.write((uint8_t)4); //thermometer_ON_char
+	} else {
+		lcd.write((uint8_t)1); //thermometer_char
+	}
+	
+	lcd.setCursor(1, 3);
+	if ( my_extruder.is_heater_ON(3) == 1 ){
+	    lcd.write((uint8_t)4); //thermometer_ON_char
+	} else {
+		lcd.write((uint8_t)1); //thermometer_char
+	}
+	
+	lcd.setCursor(10, 0);
+	lcd.write((uint8_t)2); //fan_char
+	
+	lcd.setCursor(10, 1);
+	lcd.write((uint8_t)3); //puller_char
+
+	//Write the variable values:
+
+	//Motor
+	motor_speed = my_extruder.read_motor_speed();
+	lcd.setCursor(2, 0);
+	lcd.print( dto3char( (double)motor_speed) );
+	
+	lcd.setCursor(5, 0);
+	lcd.print('/');
+	
+	motor_duty_cycle = 100*my_extruder.get_motor_duty_cycle();
+	lcd.setCursor(6, 0);
+	lcd.print( dto3char(motor_duty_cycle) );
+	
+	//Heater 1
+	heater_1_temperature = my_extruder.read_heater_temperature(1);
+	lcd.setCursor(2, 1);
+	lcd.print( dto3char(heater_1_temperature) );
+	
+	lcd.setCursor(5, 1);
+	lcd.print('/');
+	
+	heater_1_setpoint = my_extruder.get_heater_temperature_setpoint(1);
+	lcd.setCursor(6, 1);
+	lcd.print( dto3char(heater_1_setpoint) );
+	
+	//Heater 2
+	heater_2_temperature = my_extruder.read_heater_temperature(2);
+	lcd.setCursor(2, 2);
+	lcd.print( dto3char(heater_2_temperature) );
+	
+	lcd.setCursor(5, 2);
+	lcd.print('/');
+	
+	heater_2_setpoint = my_extruder.get_heater_temperature_setpoint(2);
+	lcd.setCursor(6, 2);
+	lcd.print( dto3char(heater_2_setpoint) );
+	
+	//Heater 3
+	heater_3_temperature = my_extruder.read_heater_temperature(3);
+	lcd.setCursor(2, 3);
+	lcd.print( dto3char(heater_3_temperature) );
+	
+	lcd.setCursor(5, 3);
+	lcd.print('/');
+	
+	heater_3_setpoint = my_extruder.get_heater_temperature_setpoint(3);
+	lcd.setCursor(6, 3);
+	lcd.print( dto3char(heater_3_setpoint) );
+	
+	//Fan
+	fan_on = my_extruder.is_fan_ON();
+	lcd.setCursor(11, 0);
+	lcd.print(fan_on);
+	
+	//Puller
+	puller_speed = my_extruder.get_puller_pulse_width();
+	lcd.setCursor(11, 1);
+	lcd.print( ito4char(puller_speed) );
+
+}
+
+
+void read_encoder_rotation(){
+
+	//read the encoder increment in position
+
+	//read the screen encoder position
+	new_screen_encoder_position = screen_encoder.read();
+	
+	//calculate the increment (delta) in encoder position since last execution
+	delta_encoder_position = new_screen_encoder_position - old_screen_encoder_position;
+	
+	//once we have finished calculating, store the last value of the screen encoder
+	old_screen_encoder_position = new_screen_encoder_position;
+	
+	//if the screen encoder position is "about" to overflow the int range, return it to zero
+	if ( (screen_encoder.read() >= 32000) || (screen_encoder.read() < -32000) ) {
+		screen_encoder.write(0);
+	}
+
+}
+
+void select_mode(){
+
+	//Calculate the increment (delta) in the position of the cursor
+	delta_cursor = delta_encoder_position / ENCODER_STEPS_PER_UNIT;
+
+	//Clear the cursor character in the old position before the cursor is updated
+	if (cursor_position <= 3){
+		lcd.setCursor(0, cursor_position);
+	}
+	//if the menu item is in the right column
+	else {
+		lcd.setCursor(9, cursor_position - 4);
+	}
+	lcd.write(' ');
+
+	//Calculate the new cursor position
+	//If the cursor position has gone out of the range determined by NUMBER_OF_MENU_POSITIONS, return it back
+	cursor_position = cursor_position + delta_cursor;
+	
+	while(cursor_position >= NUMBER_OF_MENU_POSITIONS ){
+		cursor_position = cursor_position - NUMBER_OF_MENU_POSITIONS;
+	}
+	
+	while(cursor_position < 0){
+		cursor_position = cursor_position + NUMBER_OF_MENU_POSITIONS;
+	}
+	
+	// Print the selection cursor
+	//if the menu item is in the left column
+	if (cursor_position <= 3){
+		lcd.setCursor(0, cursor_position);
+	}
+	//if the menu item is in the right column
+	else {
+		lcd.setCursor(9, cursor_position - 4);
+	}
+	lcd.write(CURSOR_SELECT_CHARACTER);
+}
+
+
+void edit_mode(){
+	
+	//if is editing, firstly substitute the selection character by the edition character
+	if (cursor_position <= 3){
+		lcd.setCursor(0, cursor_position);
+	}
+	//if the menu item is in the right column
+	else {
+		lcd.setCursor(9, cursor_position - 4);
+	}
+	lcd.write(CURSOR_EDIT_CHARACTER);
+
+	// update the increment (delta) of the variable to edit
+	delta_variable = delta_encoder_position / ENCODER_STEPS_PER_UNIT;
+
+	switch (cursor_position) { //depending on the menu selected, perform the editing action
+	    
+	    case MOTOR_MENU:
+
+	    	motor_duty_cycle += delta_variable;
+	    	my_extruder.set_motor_duty_cycle(motor_duty_cycle/100);
+	    	break;
+
+	    case HEATER_1_MENU:
+
+	    	heater_1_setpoint += delta_variable;
+	    	my_extruder.set_heater_temperature_setpoint(1, heater_1_setpoint);
+	    	break;
+
+	    case HEATER_2_MENU:
+
+	    	heater_2_setpoint += delta_variable;
+	    	my_extruder.set_heater_temperature_setpoint(2, heater_2_setpoint);
+	    	break;
+
+	    case HEATER_3_MENU:
+
+	    	heater_3_setpoint += delta_variable;
+	    	my_extruder.set_heater_temperature_setpoint(3, heater_3_setpoint);
+	    	break;
+
+	    case FAN_MENU:
+	    	
+	    	//if the encoder has been turned and odd number of times, change the state of the fan
+	    	//(and even number of state changes would lead to the same initial state)
+	    	if ( (delta_variable != 0) && (delta_variable%2 == 1) ){
+	    		if (my_extruder.is_fan_ON() == 1){
+	    			//if the fan is ON, turn it OFF
+	    			my_extruder.set_fan_OFF();
+	    		}
+	    		else{
+	    			//if the fan is OFF, turn it ON
+	    			my_extruder.set_fan_ON();
+	    		}
+	    	}
+	    	break;
+
+	    case PULLER_MENU:
+	    	puller_speed += delta_variable;
+	    	my_extruder.set_puller_pulse_width(puller_speed);
+	    	break;
 	}
 }
 
