@@ -3,28 +3,54 @@ Filament Extruder
 
 Filament Extruder is a project dedicated to develop a simple, economic and easy to build filament extruding machine. It starts as an academic project at University Carlos III of Madrid.
 
+Currently, the project is being prototyped and documented. The features of the present prototype are:
+
+* Variable speed drive.
+* Three independent temperature zones.
+* Modular design, subsystems are mounted on an aluminium rail.
+* Arduino controlled.
+* LCD and encoder user interface.
+* Variable speed pulling system.
+* Fan cooling system.
+
+Extruded product results have been documented to be:
+
+* Filament usable for 3D printing.
+* Up to 0.4 kg/h throughput.
+* Up to +- 0.49 mm tolerance (quite bad result by now).
+
 A video of the machine working can be found at http://youtu.be/RHb1_fSeXK4.
 
-Currently the project is in prototyping and documenting phase, this is how the extruder looks right now:
+Images of the extrusion system:
 
-*First prototype of the extruder:*
+*Extrusion line:*
 
-![First prototype of the extruder](media/2014-07-29 19.45.26.jpg)
+![](media/2014-09-24 13.01.35.jpg)
 
-*Extruder detail:*
+![](media/2014-09-24 12.51.33.jpg)
 
-![Extruder detail](media/2014-08-16 19.02.30.jpg)
+*Puller and cooling fans:*
 
-*Puller detail:*
+![](media/2014-09-24 12.49.08.jpg)
 
-![Puller detail](media/2014-08-16 19.02.47.jpg)
+*Extruder and electronics:*
 
-*Extruder with the first iteration unibody drive:*
+![](media/2014-09-24 12.49.42.jpg)
 
-![Extruder with the first iteration unibody drive](media/2014-08-18 22.53.39.jpg)
+*Extruder body:*
 
-![Extruder with the first iteration unibody drive](media/2014-08-18 22.53.50.jpg)
+![](media/2014-09-24 12.50.49.jpg)
+
+*Electronics:*
+
+![](media/2014-09-24 12.50.25.jpg)
+
+![](media/2014-09-24 12.50.36.jpg)
+
+![](media/2014-09-24 12.49.52.jpg)
 
 *LCD+encoder interface:*
 
-![LCD+encoder interface](media/2014-08-22 17.11.13.jpg)
+![](media/2014-09-24 12.49.33.jpg)
+
+![](media/2014-09-24 12.49.27.jpg)
