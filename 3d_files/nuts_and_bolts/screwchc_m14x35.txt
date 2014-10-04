@@ -1,0 +1,13 @@
+﻿"Symbol";"Value";"Unit";
+"TraceParts.PartNumber";"10-20082009-063773";"";
+"TraceParts.ClassPath";"BULTE:/ROOT/10-20082009-063773";"";
+"STANDARD";"NFE 25-125, DIN 912, ISO 4762, NFE 27161";"";
+"TraceParts.InstanceId";"10-20082009-063773BTA86VSYOEDASOQGSKG2OR55W";"";
+"REFERENCE";"M14x35";"";
+"DESIGN";"Hex socket head screws DIN 912 M14 x 35";"";
+"SUPPLIER";"BÜLTE";"";
+"TraceParts.PartLanguage";"en";"";
+"TraceParts.PartStatus";"Published";"";
+"TRACEPARTS";"TRACEPARTS";"";
+"TraceParts.PartTitle";"Hex socket head screws DIN 912";"";
+"TraceParts.PartVersion";"1.1.7";"";

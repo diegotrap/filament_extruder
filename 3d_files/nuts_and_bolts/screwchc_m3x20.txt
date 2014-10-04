@@ -1,0 +1,13 @@
+﻿"Symbol";"Value";"Unit";
+"TraceParts.PartNumber";"10-20082009-063773";"";
+"TraceParts.ClassPath";"BULTE:/ROOT/10-20082009-063773";"";
+"STANDARD";"NFE 25-125, DIN 912, ISO 4762, NFE 27161";"";
+"TraceParts.InstanceId";"10-20082009-0637732BT9IWVPHCMUP6453Y9KPKMCW";"";
+"REFERENCE";"M3x20";"";
+"DESIGN";"Hex socket head screws DIN 912 M3 x 20";"";
+"SUPPLIER";"BÜLTE";"";
+"TraceParts.PartLanguage";"en";"";
+"TraceParts.PartStatus";"Published";"";
+"TRACEPARTS";"TRACEPARTS";"";
+"TraceParts.PartTitle";"Hex socket head screws DIN 912";"";
+"TraceParts.PartVersion";"1.1.7";"";

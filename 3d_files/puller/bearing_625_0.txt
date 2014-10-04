@@ -1,0 +1,13 @@
+﻿"Symbol";"Value";"Unit";
+"TraceParts.PartNumber";"32-12102010-114776";"";
+"TraceParts.ClassPath";"NSK:/ROOT/32-12102010-114776";"";
+"TraceParts.InstanceId";"32-12102010-1147765PK1L7RAYBF3UX12EWWRCKSSF";"";
+"REFERENCE";"625";"";
+"TRACEPARTS";"TRACEPARTS";"";
+"SUPPLIER";"NSK";"";
+"MASS";"4.95";"g";
+"DESIGN";"Single row ball bearings - Miniature - Open - 625";"";
+"TraceParts.PartLanguage";"en";"";
+"TraceParts.PartStatus";"Published";"";
+"TraceParts.PartTitle";"Single row ball bearings - Miniature - Open";"";
+"TraceParts.PartVersion";"1.5.8";"";
